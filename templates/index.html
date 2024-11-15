@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ترمیم زیر نویس</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body dir="rtl" class="bg-gray-50 flex flex-col items-center justify-center min-h-screen rtl relative">
+
+    <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg mb-20 text-center z-10">
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">ترمیم زیرنویس فارسی</h2>
+        <p class="text-gray-600 mb-6">این سایت ابزاریست برای ترمیم زیرنویس‌های فارسی.</p>
+		<p class="text-gray-600 mb-7">تاکنون <span id="counter">{{conter}}</span> زیرنویس ترمیم شده اند.</p>
+
+        <!-- Form for subtitle upload -->
+        <form id="subtitleForm" method="post" enctype="multipart/form-data" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- File Name and Error Message Display -->
+            <div id="file-info" class="text-center text-gray-600 mb-4">
+                <span id="file-name" class="block text-sm"></span>
+                <span id="error-message" class="block text-red-600 text-sm hidden">لطفا یک فایل انتخاب کنید!</span>
+            </div>
+
+            <!-- Buttons for File Upload and Conversion -->
+            <div class="flex justify-between items-center space-x-4 mt-4">
+                <!-- Custom File Upload Button -->
+                <div class="relative">
+                    <input type="file" id="subtitle_file" name="subtitle_file" class="opacity-0 absolute inset-0 w-full h-full cursor-pointer" onchange="updateFileName()" />
+                    <button type="button" class="w-40 py-2 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition duration-300">
+                        انتخاب فایل
+                    </button>
+                </div>
+
+                <!-- Convert and Download Button -->
+                <button type="button" onclick="validateAndSubmit()" class="w-40 py-2 bg-green-600 text-white font-semibold rounded-lg shadow-md hover:bg-green-700 transition duration-300">ترمیم و دانلود</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Footer -->
+	<footer class="w-full fixed bottom-0 z-0 py-4">
+    	<p class="text-center text-gray-500 font-semibold text-sm tracking-wide">
+        	Developed by <a href="https://amirmohammadsafari.ir" target="_blank" class="text-blue-600">JARVIS-AI</a> - <a href="#" target="_blank" class="text-blue-600">Mr.Hidden</a>
+		</p>
+	</footer>
+	
+    <!-- Floating info button -->
+    <button id="infoButton" class="fixed bottom-24 right-6 bg-gray-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition" onclick="toggleOverlay()">
+        Info
+    </button>
+	
+    <!-- Info Overlay -->
+    <div dir="ltr" id="infoOverlay" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center hidden z-50" onclick="toggleOverlay()">
+        <div class="bg-white p-8 rounded-xl shadow-lg w-80 text-gray-700 text-sm" onclick="event.stopPropagation()">
+            <h3 class="text-lg font-bold mb-2">System Info</h3>
+            <p><strong>Version:</strong> 1.0.4</p>
+            <p><strong>Language:</strong> Python</p>
+            <p><strong>Engine:</strong> Django</p>
+            <p><strong>Browser:</strong> <span id="browserName"></span></p>
+            <p><strong>Browser Engine:</strong> <span id="browserEngine"></span></p>
+            <p><strong>Browser Version:</strong> <span id="browserVersion"></span></p>
+            <p><strong>User Agent:</strong> <span id="userAgent"></span></p>
+			<p><strong>Operating System:</strong> <span id="osName"></span></p>
+            <p><strong>Screen Resolution:</strong> <span id="screenResolution"></span></p>
+            <p><strong>Device Type:</strong> <span id="deviceType"></span></p>
+            <p><strong>Platform:</strong> <span id="platform"></span></p>
+            <p><strong>Language:</strong> <span id="language"></span></p>
+            <p><strong>Cookies Enabled:</strong> <span id="cookiesEnabled"></span></p>
+            <p><strong>JavaScript Enabled:</strong> <span id="jsEnabled"></span></p>
+            <p><strong>Online Status:</strong> <span id="onlineStatus"></span></p>
+            <p><strong>Timezone:</strong> <span id="timezone"></span> (UTC)</p>
+            <p><strong>Time of Day:</strong> <span id="timeOfDay"></span></p>
+        	<p><strong>Developed by:</strong> <span>KOUROSH SAFARI (JARVIS-AI)</span></p>
+        </div>
+    </div>
+
+    <script>
+        function updateFileName() {
+            const fileInput = document.getElementById('subtitle_file');
+            const fileName = fileInput.files.length > 0 ? fileInput.files[0].name : '';
+            document.getElementById('file-name').textContent = fileName;
+            document.getElementById('error-message').classList.add('hidden');
+        }
+
+        function validateAndSubmit() {
+            const fileInput = document.getElementById('subtitle_file');
+            const errorMessage = document.getElementById('error-message');
+
+            if (fileInput.files.length === 0) {
+                errorMessage.classList.remove('hidden');
+            } else {
+				
+            	fetch('/addcount/')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Process the response data
+                    document.getElementById('counter').innerText = data["counter"];
+                })
+                .catch(error => {
+                    // Handle any errors
+                    document.getElementById('result').innerHTML = 'Error: ' + error.message;
+                });
+				
+                errorMessage.classList.add('hidden');
+                document.getElementById('subtitleForm').submit();	
+            }
+        }
+		
+        // Function to toggle the overlay
+        function toggleOverlay() {
+            document.getElementById('infoOverlay').classList.toggle('hidden');
+        }
+
+        // Populate overlay information
+        document.getElementById('browserName').innerText = navigator.appName || "N/A";
+        document.getElementById('browserEngine').innerText = navigator.product || "N/A";
+        document.getElementById('browserVersion').innerText = navigator.appVersion || "N/A";
+        document.getElementById('platform').innerText = navigator.platform || "N/A";
+        document.getElementById('language').innerText = navigator.language || "N/A";
+        document.getElementById('cookiesEnabled').innerText = navigator.cookieEnabled ? "Yes" : "No";
+        document.getElementById('jsEnabled').innerText = "Yes";  // JavaScript is enabled if this script runs
+        document.getElementById('onlineStatus').innerText = navigator.onLine ? "Online" : "Offline";
+
+        // Get the screen resolution
+        document.getElementById('screenResolution').innerText = `${window.screen.width}x${window.screen.height}`;
+
+        // Determine the operating system based on the platform
+        let os = "Unknown";
+        if (navigator.userAgent.indexOf("Win") != -1) os = "Windows";
+        else if (navigator.userAgent.indexOf("Mac") != -1) os = "MacOS";
+        else if (navigator.userAgent.indexOf("Linux") != -1) os = "Linux";
+        else if (navigator.userAgent.indexOf("Android") != -1) os = "Android";
+        else if (navigator.userAgent.indexOf("like Mac") != -1) os = "iOS";
+        document.getElementById('osName').innerText = os;
+
+        // Determine the device type
+        let deviceType = "Desktop";
+        if (/Mobi|Android/i.test(navigator.userAgent)) {
+            deviceType = "Mobile";
+        } else if (/Tablet|iPad/i.test(navigator.userAgent)) {
+            deviceType = "Tablet";
+        }
+        document.getElementById('deviceType').innerText = deviceType;
+
+        // Get the timezone (UTC offset) and time of day
+        const now = new Date();
+        const hours = now.getHours();
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const seconds = now.getSeconds().toString().padStart(2, '0');
+        document.getElementById('timeOfDay').innerText = `${hours}:${minutes}:${seconds}`;
+        const timezoneOffset = -now.getTimezoneOffset() / 60;
+        document.getElementById('timezone').innerText = `UTC${timezoneOffset >= 0 ? "+" : ""}${timezoneOffset}`;
+
+        // Display user agent
+        document.getElementById('userAgent').innerText = navigator.userAgent || "N/A";
+    </script>
+</body>
+</html>
